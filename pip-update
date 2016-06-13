@@ -1,0 +1,46 @@
+#!/bin/sh
+# Simple script to update all out of data pip packages.
+# Copyright 2016 Dylan Baker
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+set -f
+
+if [ "${PIP_COMMAND}" != "" ]; then
+    _pip="${PIP_COMMAND}"
+else
+    _pip="pip"
+fi
+
+# Undefined variables are bad. Except above where we're absolutely dealing with
+# undefined variables.
+set -u
+
+# Save theis to unset it it later.
+_oldifs=${IFS}
+
+# Split the for loop only on newlines
+IFS='
+'
+
+for package in $(${_pip} list --outdated); do
+    package=$(printf "%s" "${package}" | awk '{print $1;}')
+    ${_pip} install --upgrade "${package}"
+done
+
+# Restore all the settings.
+IFS=${_oldifs}
+unset _oldifs
+set +fu
